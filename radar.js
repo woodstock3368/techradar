@@ -17,8 +17,8 @@ radar.add(pv.Dot)
        .add(pv.Label).text(function(d) { return d.name;});
 
 var numberOfQuadrants = radar_data.length;
-var step = 360/radar_data.length;
-var outerWidth = radar_arcs[radar_arcs.length-1].r;
+var step = 360/numberOfQuadrants;
+var outerWidth = radar_arcs[numberOfQuadrants-1].r;
 
 for (var i=0;i<=numberOfQuadrants;++i) {
    radar.add(pv.Line)
