@@ -1,14 +1,57 @@
-document.title = "Red Gate Technology Radar (straw man edition)";
+document.title = "Technology Radar Dec 2013";
 
-var radar_arcs = [
-                   {'r':100,'name':'JFDI'}     // well proven, safe choice
-                  ,{'r':200,'name':'Validate'} // worked on small example, known good, does it meet our needs?
-                  ,{'r':300,'name':'Explore'}  // new ideas on the periphery we should investigate and assess 
-                  ,{'r':400,'name':'Kill'}     // in the past a JFDI, but not suitable for any new projects
-                 ];
-
+// TODO:  need to replace with something that is more correct.  I.e. dynamic sizing
 var h = (window.innerHeight || document.documentElement.clientHeight ||document.body.clientHeight); 
 var w = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+
+// If you want to add or change the names or locations of the Rings change the model here.
+var Rings = {
+  Adopt: {name:"Adopt",radius: {inner: 0, outer: 100}},    // well proven, safe choice
+  Trial: {name:"Trial",radius: {inner: 100, outer: 200}},  // worked on small example, known good, does it meet our needs?
+  Assess: {name:"Assess",radius: {inner: 200, outer:300}}, // new ideas on the periphery we should investigate and assess
+  Hold:  {name:"Hold",radius: {inner: 300,outer:400}}      // in the past, but not suitable for any new projects
+};
+
+// If you want to add or change the colors, names or locations of the quadrants change the model here.
+var Quadrants = {
+  Tools: {name: "Tools", baseAngle: 0, left: (w-200+30), top: 18, color: "#DC6F1D"},
+  Techniques: {name: "Techniques", baseAngle: 90, left: 45, top: 18, color: "#8FA227"},
+  Platforms: {name: "Platforms", baseAngle: 180, left: 45, top: (h/2 + 18), color: "Purple"},
+  Languages:  {name: "Languages and Frameworks", baseAngle: 270, left: (w-200+30), top: (h/2+18), color: "#587486"}
+};
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+// Goto each of these methods
+//    techniquesQuadrant(),
+//    languagesQuadrant(),
+//    toolsQuadrant(),
+//    platformsQuadrant(),
+// and replace with your data. 
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+// From here are helper functions.
+var Change = {
+  none: 'c', // none means circle
+  moved: 't' // moved means triagle
+};
+
+var arcs = function(ring) {
+  return {
+    "r": ring.radius.outer,
+    "name": ring.name
+  };
+};
+
+var radar_arcs = [
+   arcs(Rings.Adopt)
+  ,arcs(Rings.Trial)
+  ,arcs(Rings.Assess)
+  ,arcs(Rings.Hold)
+                 ];
 
 var makeCoords = function(depth, angle) {
   return {
@@ -17,38 +60,36 @@ var makeCoords = function(depth, angle) {
   };
 }
 
-var Quadrants = {
-  Languages:  0,
-  Techniques: 90,
-  Tools:      180,
-  Platforms:  270
-};
-
 var offset = function(base) {
   return function(ness) { return base + (100 - ness/100*100); };
 };
 
-var jfdi = function(ness) {
-  return offset(0)(ness);
+var adopt = function(ness) {
+  return offset(Rings.Adopt.radius.inner)(ness);
 };
 
-var validate = function(ness) {
-  return offset(100)(ness);
+var trial = function(ness) {
+  return offset(Rings.Trial.radius.inner)(ness);
 };
 
-var explore = function(ness) {
-  return offset(200)(ness);
+var assess = function(ness) {
+  return offset(Rings.Assess.radius.inner)(ness);
 };
 
-var kill = function(ness) {
-  return offset(300)(ness);
+var hold = function(ness) {
+  return offset(Rings.Hold.radius.inner)(ness);
 };
 
-var element = function(name, depth, baseAngle, percentageAngle, url) {
+var element = function(name, depth, baseAngle, percentageAngle, movement, url, blipSize) {
   var result = {
     "name": name,
-    "pc":   makeCoords(depth,baseAngle + (90 * percentageAngle / 100))
+    "pc":   makeCoords(depth, baseAngle + (90 * percentageAngle / 100)),
+    "movement": movement
   };
+ 
+  if (blipSize) {
+    result["blipSize"] = blipSize;
+  }
 
   if (url) {
     result["url"] = url;
@@ -57,124 +98,139 @@ var element = function(name, depth, baseAngle, percentageAngle, url) {
   return result;
 }
 
-var techniques = function(name,depth,position,url) {
-  return element(name, depth, Quadrants.Techniques, position, url);
+var quadrantElement = function(quadrants, name, depth, percentageAngle, movement, url, blipSize) {
+  return element(name, depth, quadrants.baseAngle, percentageAngle, movement, url, blipSize);
+}
+
+var addBlip = function(quadrant, name, depth, position, movement, url, blipSize) {
+  return quadrantElement(quadrant, name, depth, position, movement, url, blipSize);
 };
 
-var languages = function(name,depth,position,url) {
-  return element(name, depth, Quadrants.Languages, position, url);
+var quadrant = function(quadrant, items) {
+  return {
+        "quadrant": quadrant.name,
+        "left" : quadrant.left,
+        "top" : quadrant.top,
+        "color" : quadrant.color,
+        "items" : items
+  }
 };
 
-var tools = function(name,depth,position,url) {
-  return element(name, depth, Quadrants.Tools, position, url);
+var techniquesQuadrant = function() {
+    var quad = Quadrants.Techniques;
+    var items = [ 
+      //addBlip(<quad>, <item name>, <adopt|trial|assess|hold>(<position in quad>), <percentage position in ring>, <Change.none|Change.moved>, <url>, <nul|size of blip>),
+      // Working example
+      addBlip(quad, "Peer Code Review", adopt(50), 30, Change.none, 'http://en.wikipedia.org/wiki/Code_review'),
+      addBlip(quad, "Continuous Integration", adopt(40), 60, Change.none, 'http://www.martinfowler.com/articles/continuousIntegration.html'),
+      addBlip(quad, "Boy Scout Rule", adopt(40), 80, Change.none, 'http://programmer.97things.oreilly.com/wiki/index.php/The_Boy_Scout_Rule'),
+      addBlip(quad, "Collective Code Ownership", adopt(40), 90, Change.none, 'http://www.extremeprogramming.org/rules/collective.html'),
+      addBlip(quad, "Configuration as Code", adopt(70), 10, Change.none),
+      addBlip(quad, "Automatic Syntax Enforcement ", adopt(80), 30, Change.none),
+
+      addBlip(quad, "Polyglot Programming", trial(100), 50, Change.none),
+      addBlip(quad, "Continuous Deployment", trial(80), 25, Change.none),
+      addBlip(quad, "Visible Architecture", trial(70), 50, Change.none),
+      addBlip(quad, "Immutable Servers", trial(30), 30, Change.none),
+      addBlip(quad, "Semantic Monitoring", trial(60), 30, Change.none),
+      addBlip(quad, "Test Driven Development", trial(20), 20, Change.none),
+      addBlip(quad, "Pair Programming", trial(60), 70, Change.none),
+      addBlip(quad, "Deliberate Development", trial(40), 50, Change.none),
+      addBlip(quad, "Behaviour Driven Development", trial(80), 65, Change.none),
+
+      addBlip(quad, "Functional Programming", assess(50), 50, Change.none),
+
+      addBlip(quad, "Exhaustive Browser Based Testing", hold(50), 50, Change.none)
+    ];
+  return quadrant(quad, items);
 };
 
-var platforms = function(name,depth,position,url) {
-  return element(name, depth, Quadrants.Platforms, position, url);
+var languagesQuadrant = function() {
+    var quad = Quadrants.Languages;
+    var items = [ 
+      //addBlip(<quad>, <item name>, <adopt|trial|assess|hold>(<position in quad>), <percentage position in ring>, <Change.none|Change.moved>, <url>, <nul|size of blip>),
+      // Working example
+      addBlip(quad,"C#", adopt(20), 20, Change.none), 
+      addBlip(quad,"JavaScript", adopt(40), 90, Change.none),
+      addBlip(quad,"NuGet", adopt(50), 60, Change.none),
+      addBlip(quad,"CSS Frameworks", adopt(50), 20, Change.none),
+ 
+      addBlip(quad,"OWIN", trial(70), 60, Change.none),
+      addBlip(quad,"TypeScript", trial(50), 80, Change.none),
+      addBlip(quad,"Ruby-on-Rails", trial(50), 40, Change.none),
+      addBlip(quad,"node.js", trial(30), 20, Change.none),
+      addBlip(quad,"Bootstrap", trial(20), 80, Change.none),
+      addBlip(quad,"JS MV*", trial(80), 20, Change.none),
+      addBlip(quad,"Cucumber", trial(10), 85, Change.none),
+      addBlip(quad,"Ruby", trial(50), 15, Change.none),
+      addBlip(quad,"Python", trial(10), 70, Change.none),
+
+      addBlip(quad,"Clojure", assess(50), 20, Change.none),
+      addBlip(quad,"Scala", assess(50), 70, Change.none),
+
+      addBlip(quad,"CoffeeScript", hold(50), 50, Change.none),
+      addBlip(quad,"Hand-written CSS", hold(50), 75, Change.none),
+    ];
+  return quadrant(quad, items);
 };
 
-var radar_data = [
-    { "quadrant": "Techniques",
-        "left" : 45,
-        "top" : 18,
-        "color" : "#8FA227",
-        "items" : [ 
-          techniques("Peer Code Review", jfdi(50), 30, 'http://en.wikipedia.org/wiki/Code_review'),
-          techniques("Continuous Integration", jfdi(40), 60, 'http://www.martinfowler.com/articles/continuousIntegration.html'),
-          techniques("Boy Scout Rule", jfdi(40), 80, 'http://programmer.97things.oreilly.com/wiki/index.php/The_Boy_Scout_Rule'),
-          techniques("Collective Code Ownership", jfdi(40), 90, 'http://www.extremeprogramming.org/rules/collective.html'),
-          techniques("Configuration as Code", jfdi(70), 10),
-          techniques("Automatic Syntax Enforcement ", jfdi(80), 30),
+var toolsQuadrant = function() {
+    var quad = Quadrants.Tools;
+    var items = [ 
+      //addBlip(<quad>, <item name>, <adopt|trial|assess|hold>(<position in quad>), <percentage position in ring>, <Change.none|Change.moved>, <url>, <nul|size of blip>),
+      // Working example
+      addBlip(quad,"Visual Studio", adopt(10), 60, Change.none),
+      addBlip(quad,"nCrunch", adopt(50), 30, Change.none, 'http://www.ncrunch.net'),
+      addBlip(quad,"Git", adopt(30), 90, Change.none, 'http://www.github.com/'),
+      addBlip(quad,"ASP.NET", adopt(60), 70, Change.none),
 
-          techniques("Polyglot Programming", validate(100), 50),
-          techniques("Continuous Deployment", validate(80), 25),
-          techniques("Visible Architecture", validate(70), 50),
-          techniques("Immutable Servers", validate(30), 30),
-          techniques("Semantic Monitoring", validate(60), 30),
-          techniques("Test Driven Development", validate(20), 20),
-          techniques("Pair Programming", validate(60), 70),
-          techniques("Deliberate Development", validate(40), 50),
-          techniques("Behaviour Driven Development", validate(80), 65),
+      addBlip(quad,"Chef", trial(25), 30, Change.none),
+      addBlip(quad,"CFEngine", trial(25), 60, Change.none),
+      addBlip(quad,"Puppet", trial(75), 50, Change.none),
+      addBlip(quad,"IntelliJ", trial(50), 60, Change.none),
+      addBlip(quad,"Graphite", trial(50), 90, Change.none),
+ 
 
-          techniques("Functional Programming", explore(50), 50),
+      addBlip(quad,"WebStorm", assess(50), 60, Change.none),
+      addBlip(quad,"Riemann", assess(50), 30, Change.none),
+      addBlip(quad,"Log Stash", assess(75), 90, 'http://logstash.net/', Change.none),
 
-          techniques("Exhaustive Browser Based Testing", kill(50), 50)
-        ]
-    },
-    { "quadrant": "Languages and Frameworks", 
-        "left": w-200+30,
-        "top" : 18,
-        "color" : "#587486",
-        "items" : [ 
-          languages("C#", jfdi(20), 20), 
-          languages("JavaScript", jfdi(40), 90),
-          languages("NuGet", jfdi(50), 60),
-          languages("CSS Frameworks", jfdi(50), 20),
-     
-          languages("OWIN", validate(70), 60),
-          languages("TypeScript", validate(50), 80),
-          languages("Ruby-on-Rails", validate(50), 40),
-          languages("node.js", validate(30), 20),
-          languages("Bootstrap", validate(20), 80),
-          languages("JS MV*", validate(80), 20),
-          languages("Cucumber", validate(10), 85),
-          languages("Ruby", validate(50), 15),
-          languages("Python", validate(10), 70),
+      addBlip(quad,"Feature Usage Reporting", hold(50), 50, Change.none),
+      addBlip(quad,"Mercurial", hold(30), 20, Change.none),
+      addBlip(quad,"Subversion", hold(30), 90, Change.none),
+      addBlip(quad,"WinForms", hold(50), 30, Change.none),
+      addBlip(quad,"WPF", hold(50), 60, Change.none), 
+    ];
+  return quadrant(quad, items);
+};
 
-          languages("Clojure", explore(50), 20),
-          languages("Scala", explore(50), 70),
+var platformsQuadrant = function() {
+    var quad = Quadrants.Platforms;
+    var items = [ 
+      //addBlip(<quad>, <item name>, <adopt|trial|assess|hold>(<position in quad>), <percentage position in ring>, <Change.none|Change.moved>, <url>, <nul|size of blip>),
+      // Working example
+      addBlip(quad,"Azure", adopt(10), 60, Change.none),
+      addBlip(quad,"EC2", adopt(20), 30, Change.none),
+      addBlip(quad,"IIS", adopt(30), 85, Change.none),
 
-          languages("CoffeeScript", kill(50), 50),
-          languages("Hand-written CSS", kill(50), 75),
-        ]
-    },
-    { "quadrant": "Tools", 
-        "left" :45,
-         "top" : (h/2 + 18),
-        "color" : "#DC6F1D",
-        "items" : [
-          tools("Visual Studio", jfdi(10), 60),
-          tools("nCrunch", jfdi(50), 30, 'http://www.ncrunch.net'),
-          tools("Git", jfdi(30), 90, 'http://www.github.com/'),
-          tools("ASP.NET", jfdi(60), 70),
+      addBlip(quad,"Linux", trial(40), 50, Change.none),
+      addBlip(quad,"Mongo", trial(60), 75, Change.none),
+      addBlip(quad,"Redis", trial(80), 25, Change.none),
+      addBlip(quad,"MySQL", trial(20), 20, Change.none),
+      addBlip(quad,"PostgreSQL", trial(95), 40, Change.none),
 
-          tools("Chef", validate(25), 30),
-          tools("CFEngine", validate(25), 60),
-          tools("Puppet", validate(75), 50),
-          tools("IntelliJ", validate(50), 60),
-          tools("Graphite", validate(50), 90),
-     
+      addBlip(quad,"Datamoic", assess(50), 50, Change.none),
+      addBlip(quad,"Apache Cordova", assess(25), 25, Change.none),
 
-          tools("WebStorm", explore(50), 60),
-          tools("Riemann", explore(50), 30),
-          tools("Log Stash", explore(75), 90, 'http://logstash.net/'),
+      addBlip(quad,"Physical Machines", hold(50), 50, Change.moved, "http://somewhere", 100)
+    ];
+  return quadrant(quad, items);
+};
 
-          tools("Feature Usage Reporting", kill(50), 50),
-          tools("Mercurial", kill(30), 20),
-          tools("Subversion", kill(30), 90),
-          tools("WinForms", kill(50), 30),
-          tools("WPF", kill(50), 60), 
-        ]
-    },
-    { "quadrant": "Platforms",
-        "left": (w-200+30),
-        "top": (h/2 + 18),
-        "color": "Purple",
-        "items":  [
-          platforms("Azure", jfdi(10), 60),
-          platforms("EC2", jfdi(20), 30),
-          platforms("IIS", jfdi(30), 85),
-
-          platforms("Linux", validate(40), 50),
-          platforms("Mongo", validate(60), 75),
-          platforms("Redis", validate(80), 25),
-          platforms("MySQL", validate(20), 20),
-          platforms("PostgreSQL", validate(95), 40),
-
-          platforms("Datamoic", explore(50), 50),
-          platforms("Apache Cordova", explore(25), 25),
-
-          platforms("Physical Machines", kill(50), 50)
-        ]
-    }
+// Define the data sets that will be used per quadrant.
+var radar_data = [ 
+    techniquesQuadrant(),
+    toolsQuadrant(),
+    platformsQuadrant(),
+    languagesQuadrant()
 ];
