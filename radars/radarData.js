@@ -7,8 +7,8 @@ var radar_arcs = [
                   ,{'r':400,'name':'Kill'}     // in the past a JFDI, but not suitable for any new projects
                  ];
 
-var h = 1160;
-var w = 1200;
+var h = (window.innerHeight || document.documentElement.clientHeight ||document.body.clientHeight); 
+var w = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
 
 var makeCoords = function(depth, angle) {
   return {
