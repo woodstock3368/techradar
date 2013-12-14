@@ -14,10 +14,10 @@ var Rings = {
 
 // If you want to add or change the colors, names or locations of the quadrants change the model here.
 var Quadrants = {
-  Tools: {name: "Tools", baseAngle: 0, left: (w-200+30), top: 18, color: "#DC6F1D"},
-  Techniques: {name: "Techniques", baseAngle: 90, left: 45, top: 18, color: "#8FA227"},
-  Platforms: {name: "Platforms", baseAngle: 180, left: 45, top: (h/2 + 18), color: "Purple"},
-  Languages:  {name: "Languages and Frameworks", baseAngle: 270, left: (w-200+30), top: (h/2+18), color: "#587486"}
+  Tools: {name: "Tools", baseAngle: 0, left: (w/2 + Rings.Hold.radius.outer + 50), top: 18, color: "#DC6F1D"},
+  Techniques: {name: "Techniques", baseAngle: 90, left: (w/2 - Rings.Hold.radius.outer - 250), top: 18, color: "#8FA227"},
+  Platforms: {name: "Platforms", baseAngle: 180, left: (w/2 - Rings.Hold.radius.outer - 250), top: (h/2 + 18), color: "Purple"},
+  Languages:  {name: "Languages and Frameworks", baseAngle: 270, left: (w/2 + Rings.Hold.radius.outer + 50), top: (h/2+18), color: "#587486"}
 };
 
 /////////////////////////////////////////////////
